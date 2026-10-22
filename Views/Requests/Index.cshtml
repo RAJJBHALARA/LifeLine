@@ -1,0 +1,51 @@
+@model List<BloodRequest>
+@{
+    ViewData["Title"] = "Blood Requests";
+    Urgency? selectedUrgency = ViewBag.Urgency;
+}
+
+<h3 class="mb-3"><i class="bi bi-droplet-fill text-danger"></i> Open blood requests</h3>
+
+<form method="get" class="card card-body shadow-sm mb-4">
+    <div class="row g-2 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label">Blood group</label>
+            <select name="group" class="form-select">
+                <option value="">Any</option>
+                @foreach (var g in BloodHelper.Groups)
+                {
+                    <option value="@g" selected="@(g == (string?)ViewBag.Group)">@g</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">City</label>
+            <input name="city" class="form-control" value="@ViewBag.City" placeholder="e.g. Rajkot" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Urgency</label>
+            <select name="urgency" class="form-select">
+                <option value="">Any</option>
+                @foreach (var u in Enum.GetValues<Urgency>())
+                {
+                    <option value="@u" selected="@(selectedUrgency == u)">@u</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-3 d-flex gap-2">
+            <button class="btn btn-danger flex-fill"><i class="bi bi-funnel"></i> Filter</button>
+            <a class="btn btn-outline-secondary" asp-action="Index">Reset</a>
+        </div>
+    </div>
+</form>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info"><i class="bi bi-info-circle"></i> No open requests match your filters.</div>
+}
+<div class="row g-3">
+    @foreach (var r in Model)
+    {
+        <div class="col-md-6 col-lg-4"><partial name="_RequestCard" model="r" /></div>
+    }
+</div>

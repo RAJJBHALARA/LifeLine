@@ -1,0 +1,48 @@
+@model LoginVm
+@{ ViewData["Title"] = "Login"; }
+
+<div class="row justify-content-center">
+<div class="col-md-6 col-lg-4">
+<div class="card shadow-sm"><div class="card-body p-4">
+    <h3 class="mb-3"><i class="bi bi-box-arrow-in-right text-danger"></i> Login</h3>
+    <form asp-action="Login" method="post">
+        <input type="hidden" asp-for="ReturnUrl" />
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <div class="mb-3">
+            <label asp-for="Email" class="form-label"></label>
+            <input asp-for="Email" class="form-control" placeholder="you@example.com" autofocus />
+            <span asp-validation-for="Email" class="text-danger small"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Password" class="form-label"></label>
+            <div class="input-group">
+                <input asp-for="Password" class="form-control" id="loginPassword" />
+                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('loginPassword', this)"><i class="bi bi-eye"></i></button>
+            </div>
+            <span asp-validation-for="Password" class="text-danger small"></span>
+        </div>
+
+        <button class="btn btn-danger w-100"><i class="bi bi-box-arrow-in-right"></i> Login</button>
+    </form>
+    <p class="mt-3 mb-1 small">New here? <a asp-action="Register">Create an account</a></p>
+    <p class="mb-0 small text-muted"><i class="bi bi-info-circle"></i> Demo: <code>aarav@demo.com</code> / <code>Password@123</code></p>
+</div></div>
+</div></div>
+
+@section Scripts {
+<script>
+    function togglePassword(inputId, btn) {
+        const input = document.getElementById(inputId);
+        const icon = btn.querySelector('i');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.replace('bi-eye', 'bi-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.replace('bi-eye-slash', 'bi-eye');
+        }
+    }
+</script>
+}

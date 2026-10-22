@@ -1,0 +1,105 @@
+/* ===== LifeLine – Custom Styles ===== */
+
+/* Blood group badge */
+.blood-badge {
+    display: inline-block;
+    min-width: 3rem;
+    padding: .25rem .6rem;
+    border-radius: 2rem;
+    background: #dc3545;
+    color: #fff;
+    font-weight: 700;
+    text-align: center;
+}
+.blood-badge.small {
+    min-width: 2.4rem;
+    padding: .1rem .5rem;
+    font-size: .85rem;
+}
+
+/* Stat numbers on home page */
+.stat {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #dc3545;
+}
+.stat-label {
+    font-size: .85rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+.stat-card {
+    transition: transform 0.2s ease-in-out;
+}
+.stat-card:hover {
+    transform: translateY(-3px);
+}
+
+/* Request cards */
+.request-card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+.request-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .12) !important;
+}
+
+/* Validation error styling */
+.input-validation-error {
+    border-color: #dc3545 !important;
+}
+.field-validation-error {
+    color: #dc3545;
+    font-size: .85rem;
+}
+
+/* Tables */
+.table th {
+    font-weight: 600;
+    font-size: .9rem;
+}
+
+/* Navbar active link */
+.navbar-dark .navbar-nav .nav-link.active {
+    font-weight: 600;
+    border-bottom: 2px solid #fff;
+}
+
+/* Form labels */
+.form-label {
+    font-weight: 500;
+    font-size: .9rem;
+}
+
+/* Smooth focus transitions */
+.form-control:focus,
+.form-select:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 .2rem rgba(220, 53, 69, .25);
+}
+
+/* Alert animation */
+.alert {
+    animation: slideDown .3s ease-out;
+}
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Card borders for severity */
+.border-danger { border-width: 2px !important; }
+.border-warning { border-width: 2px !important; }
+.border-success { border-width: 2px !important; }
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+    .stat { font-size: 1.5rem; }
+    .display-5 { font-size: 2rem; }
+}

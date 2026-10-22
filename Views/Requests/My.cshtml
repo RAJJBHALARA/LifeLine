@@ -1,0 +1,48 @@
+@model List<DonorResponse>
+@{ ViewData["Title"] = "My Activity"; }
+
+<h3 class="mb-3"><i class="bi bi-journal-text text-danger"></i> My blood requests</h3>
+@{ var mine = (List<BloodRequest>)ViewBag.MyRequests; }
+@if (!mine.Any())
+{
+    <p class="text-muted">You haven't posted any requests. <a asp-action="Create"><i class="bi bi-plus-circle"></i> Post one</a>.</p>
+}
+<div class="row g-3 mb-4">
+    @foreach (var r in mine)
+    {
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-sm h-100"><div class="card-body">
+                <span class="blood-badge">@r.BloodGroup</span>
+                @{
+                    var statusCls = r.Status switch { RequestStatus.Open => "primary", RequestStatus.Fulfilled => "success", _ => "dark" };
+                }
+                <span class="badge text-bg-@statusCls">@r.Status</span>
+                <h6 class="mt-2">@r.PatientName</h6>
+                <p class="small text-muted mb-2"><i class="bi bi-hospital"></i> @r.Hospital, @r.City &middot; @r.Responses.Count response(s)</p>
+                <a class="btn btn-sm btn-danger" asp-action="Details" asp-route-id="@r.Id"><i class="bi bi-gear"></i> Manage</a>
+            </div></div>
+        </div>
+    }
+</div>
+
+<h3 class="mb-3"><i class="bi bi-heart text-danger"></i> Requests I responded to</h3>
+@if (!Model.Any())
+{
+    <p class="text-muted">You haven't responded to any request yet. <a asp-action="Index"><i class="bi bi-search"></i> Browse requests</a>.</p>
+}
+<ul class="list-group">
+    @foreach (var r in Model)
+    {
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span>
+                <span class="blood-badge small">@r.Request.BloodGroup</span>
+                <a asp-action="Details" asp-route-id="@r.RequestId">@r.Request.PatientName</a>
+                <span class="text-muted small">&middot; <i class="bi bi-hospital"></i> @r.Request.Hospital, @r.Request.City</span>
+            </span>
+            <span class="badge @(r.Status == ResponseStatus.Donated ? "text-bg-success" : "text-bg-secondary")">
+                @if (r.Status == ResponseStatus.Donated) { <i class="bi bi-check-circle"></i> }
+                @r.Status
+            </span>
+        </li>
+    }
+</ul>

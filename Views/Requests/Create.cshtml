@@ -1,0 +1,77 @@
+@model CreateRequestVm
+@{ ViewData["Title"] = "Post Request"; }
+
+<div class="row justify-content-center">
+<div class="col-md-8 col-lg-6">
+<div class="card shadow-sm"><div class="card-body p-4">
+    <h3 class="mb-3"><i class="bi bi-droplet-half text-danger"></i> Post a blood request</h3>
+    <form asp-action="Create" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <div class="mb-3">
+            <label asp-for="PatientName" class="form-label"></label>
+            <input asp-for="PatientName" class="form-control" placeholder="e.g. Ramesh Kumar" />
+            <span asp-validation-for="PatientName" class="text-danger small"></span>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="BloodGroup" class="form-label"></label>
+                <select asp-for="BloodGroup" class="form-select" asp-items="@(new SelectList(BloodHelper.Groups))"><option value="">-- Select --</option></select>
+                <span asp-validation-for="BloodGroup" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="Units" class="form-label"></label>
+                <input asp-for="Units" type="number" min="1" max="10" class="form-control" />
+                <span asp-validation-for="Units" class="text-danger small"></span>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="City" class="form-label"></label>
+                <input asp-for="City" class="form-control" placeholder="e.g. Rajkot" />
+                <span asp-validation-for="City" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="Hospital" class="form-label"></label>
+                <input asp-for="Hospital" class="form-control" placeholder="e.g. Civil Hospital" />
+                <span asp-validation-for="Hospital" class="text-danger small"></span>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="ContactPhone" class="form-label"></label>
+                <input asp-for="ContactPhone" class="form-control" placeholder="9876543210" maxlength="10" />
+                <span asp-validation-for="ContactPhone" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="Urgency" class="form-label"></label>
+                <select asp-for="Urgency" class="form-select" asp-items="Html.GetEnumSelectList<Urgency>()"></select>
+                <span asp-validation-for="Urgency" class="text-danger small"></span>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Notes" class="form-label"></label>
+            <textarea asp-for="Notes" rows="3" class="form-control" placeholder="Any additional details (optional, max 500 chars)" maxlength="500"></textarea>
+            <span asp-validation-for="Notes" class="text-danger small"></span>
+            <div class="form-text"><span id="notesCount">0</span>/500 characters</div>
+        </div>
+
+        <button class="btn btn-danger w-100"><i class="bi bi-send"></i> Post request</button>
+    </form>
+</div></div>
+</div></div>
+
+@section Scripts {
+<script>
+    const notesInput = document.getElementById('Notes');
+    const notesCount = document.getElementById('notesCount');
+    if (notesInput && notesCount) {
+        notesCount.textContent = notesInput.value.length;
+        notesInput.addEventListener('input', () => notesCount.textContent = notesInput.value.length);
+    }
+</script>
+}

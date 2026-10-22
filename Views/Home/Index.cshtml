@@ -1,0 +1,31 @@
+@model List<BloodRequest>
+@{ ViewData["Title"] = "Home"; }
+
+<div class="p-5 mb-4 bg-white rounded-3 shadow-sm text-center">
+    <h1 class="display-5 fw-bold text-danger"><i class="bi bi-heart-pulse-fill"></i> LifeLine</h1>
+    <p class="lead">Hyperlocal Blood Donor Network &mdash; find a matching donor near you, fast.</p>
+    <div class="d-flex gap-2 justify-content-center flex-wrap">
+        <a class="btn btn-danger btn-lg" asp-controller="Requests" asp-action="Create"><i class="bi bi-droplet-half"></i> I need blood</a>
+        <a class="btn btn-outline-danger btn-lg" asp-controller="Requests" asp-action="Index"><i class="bi bi-heart"></i> I want to donate</a>
+        <a class="btn btn-outline-secondary btn-lg" asp-controller="Donors" asp-action="Index"><i class="bi bi-search"></i> Search donors</a>
+    </div>
+</div>
+
+<div class="row text-center g-3 mb-4">
+    <div class="col-6 col-md-3"><div class="card shadow-sm stat-card"><div class="card-body"><div class="stat">@ViewBag.Donors</div><div class="stat-label">Registered donors</div></div></div></div>
+    <div class="col-6 col-md-3"><div class="card shadow-sm stat-card"><div class="card-body"><div class="stat text-success">@ViewBag.Eligible</div><div class="stat-label">Eligible right now</div></div></div></div>
+    <div class="col-6 col-md-3"><div class="card shadow-sm stat-card"><div class="card-body"><div class="stat text-primary">@ViewBag.Open</div><div class="stat-label">Open requests</div></div></div></div>
+    <div class="col-6 col-md-3"><div class="card shadow-sm stat-card"><div class="card-body"><div class="stat">@ViewBag.Fulfilled</div><div class="stat-label">Fulfilled requests</div></div></div></div>
+</div>
+
+<h4 class="mb-3"><i class="bi bi-exclamation-triangle-fill text-warning"></i> Most urgent requests</h4>
+@if (!Model.Any())
+{
+    <p class="text-muted">No open requests right now. 🎉</p>
+}
+<div class="row g-3">
+    @foreach (var r in Model)
+    {
+        <div class="col-md-4"><partial name="_RequestCard" model="r" /></div>
+    }
+</div>

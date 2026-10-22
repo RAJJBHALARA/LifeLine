@@ -1,0 +1,23 @@
+@model BloodRequest
+@{
+    var cls = Model.Urgency switch { Urgency.Critical => "danger", Urgency.Urgent => "warning", _ => "secondary" };
+    var donatedCount = Model.Responses.Count(r => r.Status == ResponseStatus.Donated);
+}
+<div class="card shadow-sm h-100 border-@cls request-card">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start">
+            <span class="blood-badge">@Model.BloodGroup</span>
+            <span class="badge text-bg-@cls">@Model.Urgency</span>
+        </div>
+        <h5 class="card-title mt-2 mb-1">@Model.PatientName</h5>
+        <p class="mb-1 text-muted small"><i class="bi bi-hospital"></i> @Model.Hospital, @Model.City</p>
+        <p class="mb-2 small">
+            <strong>@Model.Units</strong> unit(s) needed &middot;
+            <strong>@Model.Responses.Count</strong> response(s)
+            @if (donatedCount > 0) { <span class="text-success">(@donatedCount donated)</span> }
+            &middot;
+            <i class="bi bi-clock"></i> @Model.CreatedAt.ToString("dd MMM, HH:mm")
+        </p>
+        <a class="btn btn-sm btn-danger" asp-controller="Requests" asp-action="Details" asp-route-id="@Model.Id"><i class="bi bi-arrow-right-circle"></i> View &amp; respond</a>
+    </div>
+</div>
