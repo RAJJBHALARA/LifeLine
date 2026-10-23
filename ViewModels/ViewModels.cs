@@ -128,6 +128,7 @@ public class CreateRequestVm
     [Display(Name = "Contact phone")]
     public string ContactPhone { get; set; } = "";
 
+    [Display(Name = "Patient Urgency Level")]
     public Urgency Urgency { get; set; } = Urgency.Normal;
 
     [StringLength(500, ErrorMessage = "Notes must be at most 500 characters.")]

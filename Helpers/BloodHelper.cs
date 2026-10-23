@@ -22,9 +22,17 @@ public static class BloodHelper
         ["O-"]  = new[] { "O-" },
     };
 
+    /// <summary>Returns list of donor blood groups that can give blood to this recipient group.</summary>
     public static List<string> DonorsFor(string recipientGroup) =>
         Compatible.TryGetValue(recipientGroup, out var list) ? list.ToList() : new List<string> { recipientGroup };
 
+    /// <summary>Returns list of recipient blood groups that can receive blood from this donor group.</summary>
+    public static List<string> RecipientsFor(string donorGroup) =>
+        Compatible.Where(kvp => kvp.Value.Contains(donorGroup))
+                  .Select(kvp => kvp.Key)
+                  .ToList();
+
+    /// <summary>Checks whether donorGroup is biologically compatible with recipientGroup.</summary>
     public static bool CanDonateTo(string donorGroup, string recipientGroup) =>
         DonorsFor(recipientGroup).Contains(donorGroup);
 

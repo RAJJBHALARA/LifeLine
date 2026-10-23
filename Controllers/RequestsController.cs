@@ -5,17 +5,37 @@ public class RequestsController : Controller
     private readonly AppDbContext _db;
     public RequestsController(AppDbContext db) => _db = db;
 
-    // Browse open requests with filters.
+    // Browse open requests with filters. Donors are not asked for urgency; requests are prioritized automatically.
     public async Task<IActionResult> Index(string? group, string? city, Urgency? urgency)
     {
         var q = _db.Requests.Include(r => r.Responses)
             .Where(r => r.Status == RequestStatus.Open);
 
-        if (!string.IsNullOrEmpty(group)) q = q.Where(r => r.BloodGroup == group);
-        if (!string.IsNullOrWhiteSpace(city)) q = q.Where(r => r.City.Contains(city.Trim()));
-        if (urgency.HasValue) q = q.Where(r => r.Urgency == urgency.Value);
+        // When a donor specifies their blood group, match all recipient groups they can biologically donate to
+        if (!string.IsNullOrEmpty(group))
+        {
+            var recipientGroups = BloodHelper.RecipientsFor(group);
+            q = q.Where(r => recipientGroups.Contains(r.BloodGroup));
+        }
 
-        ViewBag.Group = group; ViewBag.City = city; ViewBag.Urgency = urgency;
+        if (!string.IsNullOrWhiteSpace(city)) 
+            q = q.Where(r => r.City.ToLower().Contains(city.Trim().ToLower()));
+
+        if (urgency.HasValue) 
+            q = q.Where(r => r.Urgency == urgency.Value);
+
+        ViewBag.Group = group; 
+        ViewBag.City = city; 
+        ViewBag.Urgency = urgency;
+
+        if (User.Identity?.IsAuthenticated == true)
+        {
+            var me = await _db.Users.FindAsync(User.GetId());
+            ViewBag.UserBloodGroup = me?.BloodGroup;
+            ViewBag.IsEligibleDonor = me?.IsEligible == true;
+        }
+
+        // Requests are always sorted by medical urgency (Critical -> Urgent -> Normal) and then newest first
         var list = await q.OrderByDescending(r => r.Urgency).ThenByDescending(r => r.CreatedAt).ToListAsync();
         return View(list);
     }
@@ -62,12 +82,14 @@ public class RequestsController : Controller
         ViewBag.HasResponded = loggedIn && req.Responses.Any(r => r.DonorId == uid);
 
         string? reason = null;
+        AppUser? me = null;
         if (loggedIn)
         {
-            var me = await _db.Users.FindAsync(uid);
+            me = await _db.Users.FindAsync(uid);
             reason = me == null ? "Please sign in." : CheckCanRespond(req, me);
         }
         ViewBag.CannotRespondReason = reason;
+        ViewBag.CurrentUser = me;
         return View(req);
     }
 

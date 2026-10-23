@@ -4,6 +4,7 @@
     bool isOwner = ViewBag.IsOwner;
     bool hasResponded = ViewBag.HasResponded;
     string? reason = ViewBag.CannotRespondReason;
+    AppUser? currentUser = ViewBag.CurrentUser;
     bool loggedIn = User.Identity?.IsAuthenticated == true;
     var cls = Model.Urgency switch { Urgency.Critical => "danger", Urgency.Urgent => "warning", _ => "secondary" };
     var donated = Model.Responses.Count(r => r.Status == ResponseStatus.Donated);
@@ -11,11 +12,30 @@
 
 <div class="row g-4">
 <div class="col-lg-5">
+    @if (Model.Status == RequestStatus.Fulfilled)
+    {
+        <div class="alert alert-success d-flex align-items-center mb-3 shadow-sm">
+            <i class="bi bi-check-circle-fill fs-4 me-2"></i>
+            <div>
+                <strong>Request Fulfilled!</strong> All @Model.Units unit(s) of blood have been donated. Thank you to our donors!
+            </div>
+        </div>
+    }
+    else if (Model.Status == RequestStatus.Closed)
+    {
+        <div class="alert alert-secondary d-flex align-items-center mb-3 shadow-sm">
+            <i class="bi bi-x-circle-fill fs-4 me-2"></i>
+            <div>
+                <strong>Request Closed</strong> This request has been closed by the requester.
+            </div>
+        </div>
+    }
+
     <div class="card shadow-sm border-@cls">
         <div class="card-body">
-            <div class="d-flex justify-content-between">
+            <div class="d-flex justify-content-between align-items-start">
                 <span class="blood-badge">@Model.BloodGroup</span>
-                <div>
+                <div class="text-end">
                     <span class="badge text-bg-@cls">@Model.Urgency</span>
                     @{
                         var statusCls = Model.Status switch { RequestStatus.Open => "primary", RequestStatus.Fulfilled => "success", _ => "dark" };
@@ -23,9 +43,10 @@
                     <span class="badge text-bg-@statusCls">@Model.Status</span>
                 </div>
             </div>
+
             <h4 class="mt-3">@Model.PatientName</h4>
             <ul class="list-unstyled mb-3">
-                <li><i class="bi bi-droplet text-danger"></i> <strong>Units needed:</strong> @Model.Units (@donated donated)</li>
+                <li><i class="bi bi-droplet text-danger"></i> <strong>Units needed:</strong> @Model.Units (@donated donated so far)</li>
                 <li><i class="bi bi-hospital"></i> <strong>Hospital:</strong> @Model.Hospital</li>
                 <li><i class="bi bi-geo-alt"></i> <strong>City:</strong> @Model.City</li>
                 <li><i class="bi bi-calendar3"></i> <strong>Posted:</strong> @Model.CreatedAt.ToString("dd MMM yyyy, HH:mm") by @Model.Requester.FullName</li>
@@ -38,14 +59,17 @@
                     <li><i class="bi bi-telephone"></i> <strong>Contact:</strong> <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Context.Request.Path">Login to view</a></li>
                 }
             </ul>
+
             @if (!string.IsNullOrWhiteSpace(Model.Notes))
             {
-                <div class="alert alert-light mb-3"><i class="bi bi-chat-left-text"></i> @Model.Notes</div>
+                <div class="alert alert-light border mb-3"><i class="bi bi-chat-left-text me-1"></i> @Model.Notes</div>
             }
 
             @if (!loggedIn)
             {
-                <a class="btn btn-danger" asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Context.Request.Path"><i class="bi bi-box-arrow-in-right"></i> Login to respond</a>
+                <a class="btn btn-danger w-100" asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Context.Request.Path">
+                    <i class="bi bi-box-arrow-in-right"></i> Login to respond
+                </a>
             }
             else if (isOwner)
             {
@@ -58,7 +82,7 @@
             }
             else if (hasResponded)
             {
-                <div class="alert alert-success mb-0"><i class="bi bi-check-circle-fill"></i> You have responded to this request. Thank you!</div>
+                <div class="alert alert-success mb-0"><i class="bi bi-check-circle-fill"></i> You have responded to this request. The requester has your contact information. Thank you!</div>
             }
             else if (reason != null)
             {
@@ -66,9 +90,15 @@
             }
             else
             {
-                <form asp-action="Respond" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('Confirm that you want to donate for this request?');">
-                    <div class="mb-2"><textarea name="message" rows="2" maxlength="300" class="form-control" placeholder="Optional message (e.g. when you can reach the hospital)"></textarea></div>
-                    <button class="btn btn-danger"><i class="bi bi-heart-fill"></i> I can donate</button>
+                <div class="alert alert-info py-2 small mb-3">
+                    <i class="bi bi-heart-pulse-fill text-danger me-1"></i>
+                    <strong>You are eligible to donate!</strong> Your blood group (@currentUser?.BloodGroup) can donate to @Model.BloodGroup.
+                </div>
+                <form asp-action="Respond" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('Confirm that you want to volunteer as a donor for this patient?');">
+                    <div class="mb-2">
+                        <textarea name="message" rows="2" maxlength="300" class="form-control" placeholder="Optional message for requester (e.g. 'I can reach the hospital by 4 PM')"></textarea>
+                    </div>
+                    <button class="btn btn-danger w-100"><i class="bi bi-heart-fill"></i> I can donate</button>
                 </form>
             }
         </div>
@@ -76,30 +106,53 @@
 </div>
 
 <div class="col-lg-7">
-    <h5><i class="bi bi-people-fill"></i> Responses (@Model.Responses.Count)</h5>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0"><i class="bi bi-people-fill"></i> Donor Responses (@Model.Responses.Count)</h5>
+        <span class="badge text-bg-light border text-muted">@donated of @Model.Units units confirmed</span>
+    </div>
+
     @if (!Model.Responses.Any())
     {
-        <p class="text-muted">No donors have responded yet.</p>
+        <div class="card shadow-sm p-4 text-center text-muted">
+            <i class="bi bi-inbox fs-2 mb-2"></i>
+            <p class="mb-0">No donors have responded yet. Share this request with nearby donors!</p>
+        </div>
     }
     @foreach (var r in Model.Responses.OrderBy(x => x.RespondedAt))
     {
-        <div class="card shadow-sm mb-2 @(r.Status == ResponseStatus.Donated ? "border-success" : "")">
-            <div class="card-body d-flex justify-content-between align-items-start">
+        <div class="card shadow-sm mb-2 @(r.Status == ResponseStatus.Donated ? "border-success bg-light" : "")">
+            <div class="card-body d-flex justify-content-between align-items-start gap-2">
                 <div>
                     <strong>@r.Donor.FullName</strong>
-                    <span class="badge text-bg-danger">@r.Donor.BloodGroup</span>
-                    @if (r.Status == ResponseStatus.Donated) { <span class="badge text-bg-success"><i class="bi bi-check-circle"></i> Donated</span> }
-                    <div class="small text-muted">
+                    <span class="blood-badge small ms-1">@r.Donor.BloodGroup</span>
+                    @if (r.Status == ResponseStatus.Donated) 
+                    { 
+                        <span class="badge text-bg-success ms-1"><i class="bi bi-check-circle-fill"></i> Confirmed Donated</span> 
+                    }
+                    else
+                    {
+                        <span class="badge text-bg-secondary ms-1">Pending</span>
+                    }
+                    <div class="small text-muted mt-1">
                         <i class="bi bi-geo-alt"></i> @r.Donor.City@(string.IsNullOrEmpty(r.Donor.Area) ? "" : ", " + r.Donor.Area)
                         &middot; <i class="bi bi-clock"></i> @r.RespondedAt.ToString("dd MMM, HH:mm")
                     </div>
-                    @if (!string.IsNullOrWhiteSpace(r.Message)) { <div class="mt-1 fst-italic">&ldquo;@r.Message&rdquo;</div> }
-                    @if (isOwner) { <div class="mt-1"><i class="bi bi-telephone"></i> <a href="tel:@r.Donor.Phone">@r.Donor.Phone</a></div> }
+                    @if (!string.IsNullOrWhiteSpace(r.Message)) 
+                    { 
+                        <div class="mt-2 text-muted fst-italic border-start border-2 ps-2">&ldquo;@r.Message&rdquo;</div> 
+                    }
+                    @if (isOwner) 
+                    { 
+                        <div class="mt-2">
+                            <i class="bi bi-telephone text-success"></i> 
+                            <a href="tel:@r.Donor.Phone" class="fw-bold">@r.Donor.Phone</a>
+                        </div> 
+                    }
                 </div>
                 @if (isOwner && r.Status == ResponseStatus.Pending && Model.Status == RequestStatus.Open)
                 {
-                    <form asp-action="MarkDonated" asp-route-responseId="@r.Id" method="post" onsubmit="return confirm('Confirm this donor has donated?');">
-                        <button class="btn btn-sm btn-success"><i class="bi bi-check-lg"></i> Mark donated</button>
+                    <form asp-action="MarkDonated" asp-route-responseId="@r.Id" method="post" onsubmit="return confirm('Confirm that this donor has successfully donated? This starts their 90-day cooldown.');">
+                        <button class="btn btn-sm btn-success text-nowrap"><i class="bi bi-check-lg"></i> Mark donated</button>
                     </form>
                 }
             </div>
@@ -107,7 +160,7 @@
     }
     @if (!isOwner && Model.Responses.Any())
     {
-        <p class="small text-muted"><i class="bi bi-shield-lock"></i> Donor phone numbers are visible only to the requester.</p>
+        <p class="small text-muted mt-2"><i class="bi bi-shield-lock"></i> Donor phone numbers are kept private and visible only to the patient's requester.</p>
     }
 </div>
 </div>

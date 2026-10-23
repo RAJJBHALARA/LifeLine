@@ -4,7 +4,8 @@
 <div class="row justify-content-center">
 <div class="col-md-8 col-lg-6">
 <div class="card shadow-sm"><div class="card-body p-4">
-    <h3 class="mb-3"><i class="bi bi-droplet-half text-danger"></i> Post a blood request</h3>
+    <h3 class="mb-3"><i class="bi bi-droplet-half text-danger"></i> Post a Blood Request</h3>
+    <p class="text-muted small">Fill in the patient's medical details so eligible matching donors in your city can be notified.</p>
     <form asp-action="Create" method="post">
         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
@@ -17,7 +18,7 @@
         <div class="row">
             <div class="col-md-6 mb-3">
                 <label asp-for="BloodGroup" class="form-label"></label>
-                <select asp-for="BloodGroup" class="form-select" asp-items="@(new SelectList(BloodHelper.Groups))"><option value="">-- Select --</option></select>
+                <select asp-for="BloodGroup" class="form-select" asp-items="@(new SelectList(BloodHelper.Groups))"><option value="">-- Select Blood Group --</option></select>
                 <span asp-validation-for="BloodGroup" class="text-danger small"></span>
             </div>
             <div class="col-md-6 mb-3">
@@ -35,7 +36,7 @@
             </div>
             <div class="col-md-6 mb-3">
                 <label asp-for="Hospital" class="form-label"></label>
-                <input asp-for="Hospital" class="form-control" placeholder="e.g. Civil Hospital" />
+                <input asp-for="Hospital" class="form-control" placeholder="e.g. Civil Hospital, Ward 4" />
                 <span asp-validation-for="Hospital" class="text-danger small"></span>
             </div>
         </div>
@@ -45,22 +46,24 @@
                 <label asp-for="ContactPhone" class="form-label"></label>
                 <input asp-for="ContactPhone" class="form-control" placeholder="9876543210" maxlength="10" />
                 <span asp-validation-for="ContactPhone" class="text-danger small"></span>
+                <div class="form-text small">10-digit mobile number for donors to reach you</div>
             </div>
             <div class="col-md-6 mb-3">
-                <label asp-for="Urgency" class="form-label"></label>
+                <label asp-for="Urgency" class="form-label">Patient Urgency Level</label>
                 <select asp-for="Urgency" class="form-select" asp-items="Html.GetEnumSelectList<Urgency>()"></select>
                 <span asp-validation-for="Urgency" class="text-danger small"></span>
+                <div class="form-text small">Critical = immediate/ICU, Urgent = 24h, Normal = planned</div>
             </div>
         </div>
 
         <div class="mb-3">
             <label asp-for="Notes" class="form-label"></label>
-            <textarea asp-for="Notes" rows="3" class="form-control" placeholder="Any additional details (optional, max 500 chars)" maxlength="500"></textarea>
+            <textarea asp-for="Notes" rows="3" class="form-control" placeholder="Any additional details (e.g. surgery scheduled tomorrow 9 AM, contact person, etc.)" maxlength="500"></textarea>
             <span asp-validation-for="Notes" class="text-danger small"></span>
             <div class="form-text"><span id="notesCount">0</span>/500 characters</div>
         </div>
 
-        <button class="btn btn-danger w-100"><i class="bi bi-send"></i> Post request</button>
+        <button class="btn btn-danger w-100"><i class="bi bi-send"></i> Post Blood Request</button>
     </form>
 </div></div>
 </div></div>

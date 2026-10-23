@@ -1,51 +1,78 @@
 @model List<BloodRequest>
 @{
     ViewData["Title"] = "Blood Requests";
-    Urgency? selectedUrgency = ViewBag.Urgency;
+    string? selectedGroup = ViewBag.Group;
+    string? userBloodGroup = ViewBag.UserBloodGroup;
 }
 
-<h3 class="mb-3"><i class="bi bi-droplet-fill text-danger"></i> Open blood requests</h3>
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div>
+        <h3 class="mb-1"><i class="bi bi-droplet-fill text-danger"></i> Open Blood Requests</h3>
+        <p class="text-muted small mb-0">Browse patients who need blood. Requests are automatically prioritized with the most critical cases first.</p>
+    </div>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <a class="btn btn-outline-danger btn-sm" asp-action="Create"><i class="bi bi-plus-circle"></i> Post a Request</a>
+    }
+</div>
+
+@if (!string.IsNullOrEmpty(userBloodGroup) && selectedGroup != userBloodGroup)
+{
+    <div class="alert alert-light border shadow-sm py-2 px-3 mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div>
+            <i class="bi bi-person-check-fill text-danger me-1"></i>
+            Logged in with blood group <strong>@userBloodGroup</strong>.
+        </div>
+        <a class="btn btn-sm btn-danger" asp-action="Index" asp-route-group="@userBloodGroup">
+            <i class="bi bi-heart-fill"></i> Show requests I can donate to
+        </a>
+    </div>
+}
 
 <form method="get" class="card card-body shadow-sm mb-4">
     <div class="row g-2 align-items-end">
-        <div class="col-md-3">
-            <label class="form-label">Blood group</label>
+        <div class="col-md-5">
+            <label class="form-label mb-1">Your blood group (as Donor)</label>
             <select name="group" class="form-select">
-                <option value="">Any</option>
+                <option value="">All Blood Groups (Show everything)</option>
                 @foreach (var g in BloodHelper.Groups)
                 {
-                    <option value="@g" selected="@(g == (string?)ViewBag.Group)">@g</option>
+                    <option value="@g" selected="@(g == selectedGroup)">@g (shows compatible patients)</option>
                 }
             </select>
         </div>
-        <div class="col-md-3">
-            <label class="form-label">City</label>
-            <input name="city" class="form-control" value="@ViewBag.City" placeholder="e.g. Rajkot" />
-        </div>
-        <div class="col-md-3">
-            <label class="form-label">Urgency</label>
-            <select name="urgency" class="form-select">
-                <option value="">Any</option>
-                @foreach (var u in Enum.GetValues<Urgency>())
-                {
-                    <option value="@u" selected="@(selectedUrgency == u)">@u</option>
-                }
-            </select>
+        <div class="col-md-4">
+            <label class="form-label mb-1">City</label>
+            <input name="city" class="form-control" value="@ViewBag.City" placeholder="e.g. Rajkot, Ahmedabad" />
         </div>
         <div class="col-md-3 d-flex gap-2">
-            <button class="btn btn-danger flex-fill"><i class="bi bi-funnel"></i> Filter</button>
+            <button class="btn btn-danger flex-fill"><i class="bi bi-funnel"></i> Find Requests</button>
             <a class="btn btn-outline-secondary" asp-action="Index">Reset</a>
         </div>
     </div>
+    @if (!string.IsNullOrEmpty(selectedGroup))
+    {
+        <div class="small text-muted mt-2">
+            <i class="bi bi-info-circle"></i> Showing patients who can receive <strong>@selectedGroup</strong> blood:
+            <strong>@string.Join(", ", BloodHelper.RecipientsFor(selectedGroup))</strong>.
+        </div>
+    }
 </form>
 
 @if (!Model.Any())
 {
-    <div class="alert alert-info"><i class="bi bi-info-circle"></i> No open requests match your filters.</div>
+    <div class="alert alert-info"><i class="bi bi-info-circle"></i> No open requests match your filter. Try clearing the filters to view all requests.</div>
 }
-<div class="row g-3">
-    @foreach (var r in Model)
-    {
-        <div class="col-md-6 col-lg-4"><partial name="_RequestCard" model="r" /></div>
-    }
-</div>
+else
+{
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="text-muted small">Showing <strong>@Model.Count</strong> open request(s)</span>
+        <span class="badge text-bg-light border text-muted"><i class="bi bi-sort-down"></i> Prioritized by medical urgency</span>
+    </div>
+    <div class="row g-3">
+        @foreach (var r in Model)
+        {
+            <div class="col-md-6 col-lg-4"><partial name="_RequestCard" model="r" /></div>
+        }
+    </div>
+}

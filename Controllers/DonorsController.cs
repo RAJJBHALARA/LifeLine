@@ -11,14 +11,18 @@ public class DonorsController : Controller
         var cutoff = DateTime.Today.AddDays(-BloodHelper.CooldownDays);
         var q = _db.Users.Where(u => u.IsDonor && (u.LastDonationDate == null || u.LastDonationDate <= cutoff));
 
+        List<string>? compatibleDonors = null;
         if (!string.IsNullOrEmpty(group))
         {
-            var donorGroups = BloodHelper.DonorsFor(group);
-            q = q.Where(u => donorGroups.Contains(u.BloodGroup));
+            compatibleDonors = BloodHelper.DonorsFor(group);
+            q = q.Where(u => compatibleDonors.Contains(u.BloodGroup));
         }
-        if (!string.IsNullOrWhiteSpace(city)) q = q.Where(u => u.City.Contains(city.Trim()));
+        if (!string.IsNullOrWhiteSpace(city)) 
+            q = q.Where(u => u.City.ToLower().Contains(city.Trim().ToLower()));
 
-        ViewBag.Group = group; ViewBag.City = city;
+        ViewBag.Group = group; 
+        ViewBag.City = city;
+        ViewBag.CompatibleDonors = compatibleDonors;
         return View(await q.OrderBy(u => u.City).ThenBy(u => u.FullName).ToListAsync());
     }
 }
